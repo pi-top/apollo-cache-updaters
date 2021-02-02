@@ -541,7 +541,7 @@ describe('modifyFragment', () => {
     )
   })
 
-  it('can use fragementName to choose between fragments definitions', () => {
+  it('can use fragmentName to choose between fragments definitions', () => {
     const cache = new InMemoryCache()
     const data = {
       __typename: 'Test',
