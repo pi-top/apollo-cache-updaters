@@ -195,7 +195,7 @@ describe('evict', () => {
     ).toEqual(null)
   })
 
-  it('can skip garbage collection', () => {
+  it('can turn off garbage collection', () => {
     const cache = new InMemoryCache()
     const fragment = gql`
       fragment EvictTestDataWithResult on Test {
@@ -225,7 +225,7 @@ describe('evict', () => {
 
     evict<any>((result) => ({
       id: cache.identify(result.data),
-      skipGarbageCollection: true,
+      gc: false,
     }))(cache, { data })
 
     expect(

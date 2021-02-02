@@ -15,7 +15,7 @@ export type ModifyData<TData> = {
 }
 
 export type EvictOptions = Cache.EvictOptions & {
-  skipGarbageCollection?: boolean
+  gc?: boolean
 }
 
 export type ModifyOptions = Omit<Cache.ModifyOptions, 'fields'> & {

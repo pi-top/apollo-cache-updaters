@@ -4,10 +4,10 @@ import createUpdater from './helpers/createUpdater'
 import {EvictOptions} from './types'
 
 function evict<TData>(cache: ApolloCache<TData>, options: EvictOptions) {
-  const {skipGarbageCollection, ...evictOptions} = options
+  const {gc = true, ...evictOptions} = options
 
   const evicted = cache.evict(evictOptions)
-  if (evicted && !skipGarbageCollection) {
+  if (evicted && gc) {
     cache.gc()
   }
 }
