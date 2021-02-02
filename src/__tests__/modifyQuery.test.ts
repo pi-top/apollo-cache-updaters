@@ -20,7 +20,7 @@ describe('modifyQuery', () => {
       },
     }
 
-    modifyQuery((result) => ({
+    modifyQuery<any>((result) => ({
       query,
       data: result.data,
     }))(cache, {data})
@@ -46,7 +46,7 @@ describe('modifyQuery', () => {
       },
     }
 
-    modifyQuery((result) => ({
+    modifyQuery<any>((result) => ({
       query,
       data: result.data,
       variables: {id: data.test.id},
@@ -84,7 +84,7 @@ describe('modifyQuery', () => {
       data,
     })
 
-    modifyQuery((result) => ({
+    modifyQuery<any>((result) => ({
       query,
       data: {
         test: {
@@ -179,7 +179,7 @@ describe('modifyQuery', () => {
       },
     }
 
-    modifyQuery((result) => ({
+    modifyQuery<any>((result) => ({
       query,
       data: {
         test: {
@@ -237,7 +237,7 @@ describe('modifyQuery', () => {
       counter: 0,
     }
 
-    modifyQuery((result) => ({
+    modifyQuery<any>((result) => ({
       query,
       data: {
         test: {
@@ -290,7 +290,7 @@ describe('modifyQuery', () => {
       lastName: 'Two',
     }
 
-    modifyQuery((result) =>
+    modifyQuery<any>((result) =>
       result.data.things.map((thingy: any) => ({
         query,
         data: {test: thingy},
@@ -337,7 +337,7 @@ describe('modifyQuery', () => {
       },
     })
 
-    modifyQuery((result, c) => ({
+    modifyQuery<any>((result, c) => ({
       id: c.identify(reference!),
       query,
       data: result.data,
@@ -375,7 +375,7 @@ describe('modifyQuery', () => {
       optimistic: false,
     })
 
-    modifyQuery((result) => ({
+    modifyQuery<any>((result) => ({
       query,
       data: result.data,
     }))(cache, {data: {test: data}})
@@ -412,7 +412,7 @@ describe('modifyQuery', () => {
       optimistic: false,
     })
 
-    modifyQuery((result) => ({
+    modifyQuery<any>((result) => ({
       query,
       data: result.data,
       broadcast: false,

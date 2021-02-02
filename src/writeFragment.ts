@@ -1,14 +1,10 @@
-import {ApolloCache, StoreObject} from '@apollo/client'
+import {ApolloCache} from '@apollo/client'
 
 import buildFragment from './helpers/buildFragment'
 import createUpdater from './helpers/createUpdater'
 import {WriteFragmentOptions} from './types'
 
-function writeFragment<
-  TData,
-  TFragmentData extends StoreObject,
-  TFragmentVariables = {}
->(
+function writeFragment<TData, TFragmentData, TFragmentVariables = {}>(
   cache: ApolloCache<TData>,
   options: WriteFragmentOptions<TFragmentData, TFragmentVariables>,
 ) {
