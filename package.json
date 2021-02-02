@@ -1,5 +1,5 @@
 {
-  "name": "@pitop/apollo-cache-updaters",
+  "name": "@pi-top/apollo-cache-updaters",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
@@ -49,5 +49,9 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "repository": {
+    "url": "https://github.com/pi-top/apollo-cache-updaters",
+    "type": "git"
   }
 }

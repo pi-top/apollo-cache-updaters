@@ -41,7 +41,7 @@ This module is distributed via [npm][npm] which is bundled with [node][node] and
 should be installed as one of your project's `dependencies`:
 
 ```
-npm install --save @pitop/apollo-cache-updaters
+npm install --save @pi-top/apollo-cache-updaters
 ```
 
 ## Usage
@@ -54,8 +54,8 @@ MIT
 
 [npm]: https://www.npmjs.com/
 [node]: https://nodejs.org
-[build-badge]: https://github.com/pitop/apollo-cache-updaters/workflows/webdriverio-testing-library/badge.svg
-[build]: https://github.com/pitop/apollo-cache-updaters/actions?query=branch%3Amaster+workflow%3Awebdriverio-testing-library
+[build-badge]: https://github.com/pi-top/apollo-cache-updaters/workflows/apollo-cache-updaters/badge.svg
+[build]: https://github.com/pi-top/apollo-cache-updaters/actions?query=branch%3Amaster+workflow%3Aapollo-cache-updaters
 [version-badge]: https://img.shields.io/npm/v/pitop/apollo-cache-updaters.svg?style=flat-square
 [package]: https://www.npmjs.com/package/@pitop/apollo-cache-updaters
 [downloads-badge]: https://img.shields.io/npm/dm/pitop/apollo-cache-updaters.svg?style=flat-square
@@ -65,4 +65,4 @@ MIT
 [prs-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square
 [prs]: http://makeapullrequest.com
 [coc-badge]: https://img.shields.io/badge/code%20of-conduct-ff69b4.svg?style=flat-square
-[coc]: https://github.com/pitop/apollo-cache-updaters/blob/master/other/CODE_OF_CONDUCT.md
+[coc]: https://github.com/pi-top/apollo-cache-updaters/blob/master/other/CODE_OF_CONDUCT.md
