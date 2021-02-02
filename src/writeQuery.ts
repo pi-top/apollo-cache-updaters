@@ -1,4 +1,4 @@
-import {ApolloCache, MutationUpdaterFn} from '@apollo/client'
+import {ApolloCache} from '@apollo/client'
 import createUpdater from './helpers/createUpdater'
 
 import {WriteQueryOptions} from './types'

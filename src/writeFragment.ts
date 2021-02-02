@@ -1,4 +1,4 @@
-import {ApolloCache, MutationUpdaterFn, StoreObject} from '@apollo/client'
+import {ApolloCache, StoreObject} from '@apollo/client'
 
 import buildFragment from './helpers/buildFragment'
 import createUpdater from './helpers/createUpdater'
