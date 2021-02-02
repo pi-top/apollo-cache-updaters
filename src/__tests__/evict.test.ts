@@ -240,4 +240,37 @@ describe('evict', () => {
       }),
     ).toEqual(nested)
   })
+
+  it('can skip', () => {
+    const cache = new InMemoryCache()
+    const fragment = gql`
+      fragment SkipTestData on Test {
+        __typename
+        id
+        skip
+      }
+    `
+    const data = {
+      __typename: 'Test',
+      id: 'thingy',
+      skip: true,
+    }
+
+    cache.writeFragment({
+      fragment,
+      data,
+    })
+
+    evict<any>((result) => ({
+      id: cache.identify(result.data),
+      skip: result.data.skip,
+    }))(cache, { data })
+
+    expect(
+      cache.readFragment({
+        id: cache.identify(data),
+        fragment,
+      }),
+    ).toEqual(data)
+  });
 })

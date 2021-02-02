@@ -163,6 +163,20 @@ const update = combine(
 )
 ```
 
+### skipping updates
+
+Sometimes we want to conditionally update the cache, to do this we can set the
+`skip` value in the updater options:
+
+```
+import { modify } from '@pi-top/apollo-cache-updaters'
+
+const update = evict((result, cache) => ({
+  id: cache.identify(deleted),
+  skip: !result.data?.success,
+}));
+```
+
 ### Typescript
 
 The project comes fully typed.

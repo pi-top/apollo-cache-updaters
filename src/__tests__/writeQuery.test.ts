@@ -218,4 +218,32 @@ describe('writeQuery', () => {
 
     expect(diffResult).not.toBeDefined()
   })
+
+  it('can skip', () => {
+    const cache = new InMemoryCache()
+    const query = gql`
+      query GetTest {
+        test {
+          __typename
+          id
+          skip
+        }
+      }
+    `
+    const data = {
+      test: {
+        __typename: 'Test',
+        id: 'thingy',
+        skip: true,
+      },
+    }
+
+    writeQuery<any>((result) => ({
+      query,
+      data: result.data,
+      skip: result.data.test.skip,
+    }))(cache, {data})
+
+    expect(cache.readQuery({query})).toBeNull()
+  })
 })

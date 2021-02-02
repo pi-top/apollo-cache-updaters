@@ -658,4 +658,32 @@ describe('modifyFragment', () => {
 
     expect(diffResult).not.toBeDefined()
   })
+
+  it('can skip', () => {
+    const cache = new InMemoryCache()
+    const fragment = gql`
+      fragment SkipTestData on Test {
+        __typename
+        id
+        skip
+      }
+    `
+    const data = {
+      __typename: 'Test',
+      id: 'thingy',
+      skip: true,
+    }
+
+    modifyFragment<any>((result) => ({
+      data: result.data,
+      skip: result.data.skip,
+    }))(cache, {data})
+
+    expect(
+      cache.readFragment({
+        id: cache.identify(data),
+        fragment,
+      }),
+    ).toBeNull()
+  })
 })

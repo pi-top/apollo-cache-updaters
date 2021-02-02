@@ -28,7 +28,6 @@ describe('modifyQuery', () => {
     expect(cache.readQuery({query})).toEqual(data)
   })
 
-
   it('can write data with variables to the cache', () => {
     const cache = new InMemoryCache()
     const query = gql`
@@ -419,5 +418,33 @@ describe('modifyQuery', () => {
     }))(cache, {data: {test: data}})
 
     expect(diffResult).not.toBeDefined()
+  })
+
+  it('can skip', () => {
+    const cache = new InMemoryCache()
+    const query = gql`
+      query GetTest {
+        test {
+          __typename
+          id
+          skip
+        }
+      }
+    `
+    const data = {
+      test: {
+        __typename: 'Test',
+        id: 'thingy',
+        skip: true,
+      },
+    }
+
+    modifyQuery<any>((result) => ({
+      query,
+      data: result.data,
+      skip: result.data.test.skip,
+    }))(cache, {data})
+
+    expect(cache.readQuery({query})).toBeNull()
   })
 })

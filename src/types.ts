@@ -1,7 +1,11 @@
 import {Cache, ApolloCache, StoreValue, FetchResult} from '@apollo/client'
 import {Modifier} from '@apollo/client/cache/core/types/common'
 
-export type MutationUpdaterOptionsFn<TData, Options> = (
+export type UpdaterOptions = {
+  skip?: boolean
+}
+
+export type MutationUpdaterOptionsFn<TData, Options extends UpdaterOptions> = (
   result: FetchResult<TData>,
   cache: ApolloCache<TData>,
 ) => Options | Options[]
@@ -19,9 +23,7 @@ export type EvictOptions = Cache.EvictOptions & {
 }
 
 export type ModifyOptions = Omit<Cache.ModifyOptions, 'fields'> & {
-  fields:
-    | {[fieldName: string]: Modifier<any> | undefined}
-    | Modifier<any>
+  fields: {[fieldName: string]: Modifier<any> | undefined} | Modifier<any>
 }
 
 export type ModifyFragmentOptions<TData, TVariables> = Omit<

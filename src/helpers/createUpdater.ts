@@ -15,10 +15,13 @@ export default function createUpdater<
       const options = createOptions(result, cache)
 
       if (Array.isArray(options)) {
-        return options.map((currentOptions) => method(cache, currentOptions))
+        return options.forEach(
+          (currentOptions) =>
+            currentOptions.skip || method(cache, currentOptions),
+        )
       }
 
-      return method(cache, options)
+      return options.skip || method(cache, options)
     }
   }
 }
