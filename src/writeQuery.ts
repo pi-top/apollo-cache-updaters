@@ -3,7 +3,7 @@ import createUpdater from './helpers/createUpdater'
 
 import {WriteQueryOptions} from './types'
 
-function writeQuery<TData, TQueryData, TQueryVariables>(
+function writeQuery<TData, TQueryData = {}, TQueryVariables = {}>(
   cache: ApolloCache<TData>,
   options: WriteQueryOptions<TQueryData, TQueryVariables>,
 ) {

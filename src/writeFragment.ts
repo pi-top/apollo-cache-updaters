@@ -4,7 +4,7 @@ import buildFragment from './helpers/buildFragment'
 import createUpdater from './helpers/createUpdater'
 import {WriteFragmentOptions} from './types'
 
-function writeFragment<TData, TFragmentData, TFragmentVariables = {}>(
+function writeFragment<TData, TFragmentData = {}, TFragmentVariables = {}>(
   cache: ApolloCache<TData>,
   options: WriteFragmentOptions<TFragmentData, TFragmentVariables>,
 ) {

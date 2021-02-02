@@ -5,7 +5,7 @@ import createData from './helpers/createData'
 import createUpdater from './helpers/createUpdater'
 import {ModifyFragmentOptions} from './types'
 
-function modifyFragment<TData, TFragmentData, TFragmentVariables>(
+function modifyFragment<TData, TFragmentData = {}, TFragmentVariables = {}>(
   cache: ApolloCache<TData>,
   options: ModifyFragmentOptions<TFragmentData, TFragmentVariables>,
 ) {
