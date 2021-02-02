@@ -43,6 +43,7 @@ behaviours are easy to disable.
   - [writeFragment](#writefragment)
   - [evict](#evict)
   - [combine](#combine)
+  - [skipping updates](#skipping-updates)
   - [Typescript](#typescript)
 - [LICENSE](#license)
 
