@@ -8,8 +8,8 @@ function modifyQuery<TData, TQueryData = {}, TQueryVariables = {}>(
   cache: ApolloCache<TData>,
   options: ModifyQueryOptions<TQueryData, TQueryVariables>,
 ) {
-  const {data: modifyData, ...queryOptions} = options
-  const data = createData<any>(modifyData, cache)
+  const {data: modifyData, optimistic = true, ...queryOptions} = options
+  const data = createData<any>(modifyData, cache, optimistic)
 
   cache.writeQuery<TQueryData, TQueryVariables>({
     data,

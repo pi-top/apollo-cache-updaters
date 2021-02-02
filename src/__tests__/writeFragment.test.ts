@@ -280,7 +280,7 @@ describe('writeFragment', () => {
     writeFragment<any, any, any>((result, c) => ({
       data: {__typename: result.data.__typename},
       id: c.identify(data),
-    }))(cache, { data })
+    }))(cache, {data})
 
     expect(
       cache.readFragment({
@@ -329,7 +329,7 @@ describe('writeFragment', () => {
       writeFragment<any, any, any>((result) => ({
         data: result.data,
         fragment,
-      }))(cache, { data }),
+      }))(cache, {data}),
     ).toThrowError(
       'Found 2 fragments. `fragmentName` must be provided when there is not exactly 1 fragment.',
     )
@@ -410,7 +410,7 @@ describe('writeFragment', () => {
     })
 
     writeFragment<any, any, any>((result) => ({
-      data: result.data
+      data: result.data,
     }))(cache, {data})
 
     expect(diffResult).toBeDefined()

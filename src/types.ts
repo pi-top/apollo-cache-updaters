@@ -32,6 +32,7 @@ export type ModifyFragmentOptions<TData, TVariables> = Omit<
 > & {
   data: ModifyData<any>
   fragment?: Cache.WriteFragmentOptions<TData, TVariables>['fragment']
+  optimistic?: boolean
 }
 
 export type ModifyQueryOptions<TData, TVariables> = Omit<
@@ -39,6 +40,7 @@ export type ModifyQueryOptions<TData, TVariables> = Omit<
   'data'
 > & {
   data: ModifyData<TData>
+  optimistic?: boolean
 }
 
 export type WriteFragmentOptions<TData, TVariables> = Omit<

@@ -9,8 +9,8 @@ function modifyFragment<TData, TFragmentData = {}, TFragmentVariables = {}>(
   cache: ApolloCache<TData>,
   options: ModifyFragmentOptions<TFragmentData, TFragmentVariables>,
 ) {
-  const {data: modifyData, ...queryOptions} = options
-  const data = createData<any>(modifyData, cache)
+  const {data: modifyData, optimistic = true, ...queryOptions} = options
+  const data = createData<any>(modifyData, cache, optimistic)
   const fragment = buildFragment(data)
 
   return cache.writeFragment<any, TFragmentVariables>({

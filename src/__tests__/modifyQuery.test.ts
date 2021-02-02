@@ -447,4 +447,99 @@ describe('modifyQuery', () => {
 
     expect(cache.readQuery({query})).toBeNull()
   })
+
+  it('uses optimistic cache for modifiers by default', () => {
+    const cache = new InMemoryCache()
+    const query = gql`
+      query GetTest {
+        test {
+          __typename
+          id
+          firstName
+        }
+      }
+    `
+    const data = {
+      test: {
+        __typename: 'Test',
+        id: 'thingy',
+        firstName: 'Original firstName',
+      },
+    }
+
+    cache.recordOptimisticTransaction(
+      (c) =>
+        c.writeQuery({
+          query,
+          data,
+        }),
+      'optimistic-query-id',
+    )
+
+    modifyQuery<any>((result) => ({
+      query,
+      data: {
+        test: {
+          ...result.data.test,
+          firstName: (cachedFirstName?: string) =>
+            `${cachedFirstName || ''} modified`,
+        },
+      },
+    }))(cache, {data})
+
+    expect(cache.readQuery({query})).toEqual({
+      test: {
+        ...data.test,
+        firstName: 'Original firstName modified',
+      },
+    })
+  })
+
+  it('can use normal cache for modifiers', () => {
+    const cache = new InMemoryCache()
+    const query = gql`
+      query GetTest {
+        test {
+          __typename
+          id
+          firstName
+        }
+      }
+    `
+    const data = {
+      test: {
+        __typename: 'Test',
+        id: 'thingy',
+        firstName: 'Original firstName',
+      },
+    }
+
+    cache.recordOptimisticTransaction(
+      (c) =>
+        c.writeQuery({
+          query,
+          data,
+        }),
+      'optimistic-query-id',
+    )
+
+    modifyQuery<any>((result) => ({
+      optimistic: false,
+      query,
+      data: {
+        test: {
+          ...result.data.test,
+          firstName: (cachedFirstName?: string) =>
+            `${cachedFirstName || ''} modified`,
+        },
+      },
+    }))(cache, {data})
+
+    expect(cache.readQuery({query})).toEqual({
+      test: {
+        ...data.test,
+        firstName: ' modified',
+      },
+    })
+  })
 })

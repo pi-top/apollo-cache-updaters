@@ -686,4 +686,81 @@ describe('modifyFragment', () => {
       }),
     ).toBeNull()
   })
+
+  it('uses optimistic cache for modifiers by default', () => {
+    const cache = new InMemoryCache()
+    const fragment = gql`
+      fragment OptimisticTestData on Test {
+        __typename
+        id
+        firstName
+      }
+    `
+    const data = {
+      __typename: 'Test',
+      id: 'thingy',
+      firstName: 'Original firstName',
+    }
+
+    cache.recordOptimisticTransaction(
+      (c) =>
+        c.writeFragment({
+          fragment,
+          data,
+        }),
+      'optimistic-query-id',
+    )
+
+    modifyFragment<any>((result) => ({
+      data: {
+        ...result.data,
+        firstName: (cachedFirstName?: string) =>
+          `${cachedFirstName || ''} modified`,
+      },
+    }))(cache, {data})
+
+    expect(cache.readFragment({fragment, id: cache.identify(data)})).toEqual({
+      ...data,
+      firstName: 'Original firstName modified',
+    })
+  })
+
+  it('can use normal cache for modifiers', () => {
+    const cache = new InMemoryCache()
+    const fragment = gql`
+      fragment OptimisticTestData on Test {
+        __typename
+        id
+        firstName
+      }
+    `
+    const data = {
+      __typename: 'Test',
+      id: 'thingy',
+      firstName: 'Original firstName',
+    }
+
+    cache.recordOptimisticTransaction(
+      (c) =>
+        c.writeFragment({
+          fragment,
+          data,
+        }),
+      'optimistic-query-id',
+    )
+
+    modifyFragment<any>((result) => ({
+      optimistic: false,
+      data: {
+        ...result.data,
+        firstName: (cachedFirstName?: string) =>
+          `${cachedFirstName || ''} modified`,
+      },
+    }))(cache, {data})
+
+    expect(cache.readFragment({fragment, id: cache.identify(data)})).toEqual({
+      ...data,
+      firstName: ' modified',
+    })
+  })
 })
