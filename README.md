@@ -30,7 +30,7 @@ makes it possible to write complex updates inline.
 
 Common patterns in update methods are done automatically, for instance
 `writeFragment` automatically generates it's fragment from `data`. All automatic
-behaviours are easy to disable as a rule.
+behaviours are easy to disable.
 
 ## Table of Contents
 
@@ -39,6 +39,11 @@ behaviours are easy to disable as a rule.
 
 - [Installation](#installation)
 - [Usage](#usage)
+  - [Updaters](#updaters)
+  - [writeFragment](#writefragment)
+  - [evict](#evict)
+  - [combine](#combine)
+  - [Typescript](#typescript)
 - [LICENSE](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -62,11 +67,11 @@ This package exports updaters for the cache actions: `evict`, `modify`,
 
 ### Updaters
 
-Each updater accepts a `createOptions` callback which can be used to create the
-options for the relevant action. For example the `createOptions` callback for
-`writeQuery` should return the same options that would be passed to the
-`cache.writeQuery` function. `createOptions` is called with the mutation's
-`ExecutionResult` as the first argument and `ApolloCache` as the second:
+Each updater accepts a `createOptions` callback that is called with the
+`ExecutionResult` and the `ApolloCache` as the first and second arguments
+respectively. The `createOptions` callback is used to create options for a cache
+method, for example `writeQuery`'s `createOptions` callback should return the
+same options that would be passed `cache.writeQuery`:
 
 ```
 import { writeQuery } from '@pi-top/apollo-cache-updaters';
@@ -84,8 +89,8 @@ const update = writeQuery((result) => ({
 })),
 ```
 
-All updaters accept `createOptions` returning an array, for when multiple
-operations need to performed for on `ExecutionResult`
+`createOptions` can also return an array of options, for when multiple similar
+operations need to performed from a single `ExecutionResult`:
 
 ```
 import { writeQuery } from '@pi-top/apollo-cache-updaters';
@@ -107,8 +112,8 @@ const update = writeQuery((result) => result.data.stuffs.map(stuff => ({
 ### writeFragment
 
 `writeFragment` automatically generates it's fragment from the `data` property
-when `fragment` is undefined. When it does this a `__typename` property is
-required to exist in `data`:
+when `fragment` is undefined. Note that when using this behaviour the
+`__typename` property is required to exist in `data`:
 
 ```
 import { writeFragment } from '@pi-top/apollo-cache-updaters';
@@ -116,6 +121,7 @@ import { writeFragment } from '@pi-top/apollo-cache-updaters';
 const update = writeFragment((result) => ({
   data: {
     ...thing,
+    __typename: 'Thing',
     stuff: result.data.stuff
   }
 }))
@@ -125,6 +131,15 @@ const update = writeFragment((result) => ({
 
 `evict` automatically calls `cache.gc` if there was a successful eviction. To
 stop the behaviour there is an option `gc` that can be set to `false`
+
+```
+import { evict } from '@pi-top/apollo-cache-updaters';
+
+const update = evict((result, cache) => ({
+  id: cache.identify(result.data),
+  gc: false,
+}))
+```
 
 ### combine
 
