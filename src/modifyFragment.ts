@@ -11,11 +11,10 @@ function modifyFragment<TData, TFragmentData = {}, TFragmentVariables = {}>(
 ) {
   const {data: modifyData, optimistic = true, ...queryOptions} = options
   const data = createData<any>(modifyData, cache, optimistic)
-  const fragment = buildFragment(data)
 
   return cache.writeFragment<any, TFragmentVariables>({
     id: cache.identify(data),
-    fragment,
+    fragment: queryOptions.fragment || buildFragment(data),
     data,
     ...queryOptions,
   })

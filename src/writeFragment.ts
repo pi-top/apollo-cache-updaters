@@ -8,10 +8,9 @@ function writeFragment<TData, TFragmentData = {}, TFragmentVariables = {}>(
   cache: ApolloCache<TData>,
   options: WriteFragmentOptions<TFragmentData, TFragmentVariables>,
 ) {
-  const {data} = options
   return cache.writeFragment({
-    fragment: buildFragment(data),
     ...options,
+    fragment: options.fragment || buildFragment(options.data),
   })
 }
 

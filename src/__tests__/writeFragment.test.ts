@@ -14,6 +14,23 @@ describe('writeFragment', () => {
     )
   })
 
+  it('does not check for typename in data if fragment is passed', () => {
+    const cache = new InMemoryCache()
+    const update = writeFragment(() => ({
+      data: {},
+      fragment: gql`
+        fragment NoTypenameFragment on Test {
+          __typename
+          id
+        }
+      `,
+    }))
+
+    expect(() => update(cache, {})).not.toThrow(
+      'Unable to build a fragment without a typename',
+    )
+  })
+
   it('writes data to the cache', () => {
     const cache = new InMemoryCache()
     const data = {
