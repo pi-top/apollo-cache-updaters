@@ -4,8 +4,8 @@ import createData from './helpers/createData'
 import createUpdater from './helpers/createUpdater'
 import {ModifyQueryOptions} from './types'
 
-function modifyQuery<TQueryData = {}, TQueryVariables = {}>(
-  cache: ApolloCache<any>,
+function modifyQuery<TData, TQueryData = {}, TQueryVariables = {}>(
+  cache: ApolloCache<TData>,
   options: ModifyQueryOptions<TQueryData, TQueryVariables>,
 ) {
   const {data: modifyData, ...queryOptions} = options
