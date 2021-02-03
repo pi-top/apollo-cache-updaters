@@ -408,8 +408,10 @@ describe('writeFragment', () => {
       }
     `
     const data = {
-      __typename: 'Test',
-      id: 'thingy',
+      test: {
+        __typename: 'Test',
+        id: 'thingy',
+      },
     }
 
     cache.writeQuery({
@@ -427,7 +429,7 @@ describe('writeFragment', () => {
     })
 
     writeFragment<any, any, any>((result) => ({
-      data: result.data,
+      data: result.data.test,
     }))(cache, {data})
 
     expect(diffResult).toBeDefined()
@@ -444,8 +446,10 @@ describe('writeFragment', () => {
       }
     `
     const data = {
-      __typename: 'Test',
-      id: 'thingy',
+      test: {
+        __typename: 'Test',
+        id: 'thingy',
+      },
     }
 
     cache.writeQuery({
@@ -463,7 +467,7 @@ describe('writeFragment', () => {
     })
 
     writeFragment<any, any, any>((result) => ({
-      data: result.data,
+      data: result.data.test,
       broadcast: false,
     }))(cache, {data})
 
