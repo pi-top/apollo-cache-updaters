@@ -1,18 +1,19 @@
 import {ApolloCache} from '@apollo/client'
 
-import createData from './helpers/createData'
 import createUpdater from './helpers/createUpdater'
+import modifyCachedData from './helpers/modifyCachedData'
 import {ModifyQueryOptions} from './types'
 
 function modifyQuery<TData, TQueryData = {}, TQueryVariables = {}>(
   cache: ApolloCache<TData>,
   options: ModifyQueryOptions<TQueryData, TQueryVariables>,
 ) {
-  const {data: modifyData, optimistic = true, ...queryOptions} = options
-  const data = createData<any>(modifyData, cache, optimistic)
+  const {data: modifiers, optimistic = true, ...queryOptions} = options
+  const queryData = cache.readQuery(queryOptions, optimistic)
+  if (!queryData) return
 
-  cache.writeQuery<TQueryData, TQueryVariables>({
-    data,
+  cache.writeQuery({
+    data: modifyCachedData(queryData, modifiers, cache),
     ...queryOptions,
   })
 }

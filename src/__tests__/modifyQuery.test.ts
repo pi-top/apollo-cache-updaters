@@ -3,7 +3,7 @@ import {DataProxy, gql, InMemoryCache} from '@apollo/client'
 import modifyQuery from '../modifyQuery'
 
 describe('modifyQuery', () => {
-  it('writes data to the cache', () => {
+  it('does nothing if query is not cached', () => {
     const cache = new InMemoryCache()
     const query = gql`
       query GetTest {
@@ -25,10 +25,10 @@ describe('modifyQuery', () => {
       data: result.data,
     }))(cache, {data})
 
-    expect(cache.readQuery({query})).toEqual(data)
+    expect(cache.readQuery({query})).toBeNull()
   })
 
-  it('can write data with variables to the cache', () => {
+  it('does nothing if query with matching variables is not cached', () => {
     const cache = new InMemoryCache()
     const query = gql`
       query GetTest($id: String) {
@@ -45,6 +45,8 @@ describe('modifyQuery', () => {
       },
     }
 
+    cache.writeQuery({query, data})
+
     modifyQuery<any>((result) => ({
       query,
       data: result.data,
@@ -56,10 +58,10 @@ describe('modifyQuery', () => {
         query,
         variables: {id: data.test.id},
       }),
-    ).toEqual(data)
+    ).toBeNull()
   })
 
-  it('can modify existing cached values', () => {
+  it('can modify existing query', () => {
     const cache = new InMemoryCache()
     const query = gql`
       query GetTest {
@@ -83,18 +85,62 @@ describe('modifyQuery', () => {
       data,
     })
 
-    modifyQuery<any>((result) => ({
+    modifyQuery<any>(() => ({
       query,
       data: {
         test: {
-          ...result.data.test,
           firstName: (cachedFirstName?: string) =>
             `${cachedFirstName || ''} modified`,
         },
       },
+    }))(cache, {})
+
+    expect(cache.readQuery({query, returnPartialData: true})).toEqual({
+      test: {
+        ...data.test,
+        firstName: 'Original firstName modified',
+      },
+    })
+  })
+
+  it('can modify existing query with variables', () => {
+    const cache = new InMemoryCache()
+    const query = gql`
+      query GetTest($id: String) {
+        test(id: $id) {
+          __typename
+          id
+          firstName
+        }
+      }
+    `
+    const data = {
+      test: {
+        __typename: 'Test',
+        id: 'thingy',
+        firstName: 'Original firstName',
+      },
+    }
+    const variables = {id: data.test.id}
+
+    cache.writeQuery({
+      query,
+      data,
+      variables,
+    })
+
+    modifyQuery<any>((result) => ({
+      query,
+      data: {
+        test: {
+          firstName: (cachedFirstName?: string) =>
+            `${cachedFirstName || ''} modified`,
+        },
+      },
+      variables: {id: result.data.test.id},
     }))(cache, {data})
 
-    expect(cache.readQuery({query})).toEqual({
+    expect(cache.readQuery({query, variables})).toEqual({
       test: {
         ...data.test,
         firstName: 'Original firstName modified',
@@ -143,7 +189,6 @@ describe('modifyQuery', () => {
       query,
       data: {
         test: {
-          ...data.test,
           relation: (cachedRelation: typeof nested[] = []) => [
             ...cachedRelation,
             result.data,
@@ -156,43 +201,6 @@ describe('modifyQuery', () => {
       test: {
         ...data.test,
         relation: [nested, newNested],
-      },
-    })
-  })
-
-  it('calls modifiers with undefined if cached data does not exist', () => {
-    const cache = new InMemoryCache()
-    const query = gql`
-      query GetTest {
-        test {
-          __typename
-          id
-          firstName
-        }
-      }
-    `
-    const data = {
-      test: {
-        __typename: 'Test',
-        id: 'thingy',
-      },
-    }
-
-    modifyQuery<any>((result) => ({
-      query,
-      data: {
-        test: {
-          ...result.data.test,
-          firstName: (cachedFirstName?: string) =>
-            `${cachedFirstName} modified`,
-        },
-      },
-    }))(cache, {data})
-
-    expect(cache.readQuery({query})).toEqual({
-      test: {
-        ...data.test,
-        firstName: 'undefined modified',
       },
     })
   })
@@ -264,7 +272,7 @@ describe('modifyQuery', () => {
     })
   })
 
-  it('can write multiple queries', () => {
+  it('can modify multiple queries', () => {
     const cache = new InMemoryCache()
     const query = gql`
       query GetTest($id: String) {
@@ -289,10 +297,25 @@ describe('modifyQuery', () => {
       lastName: 'Two',
     }
 
+    cache.writeQuery({
+      query,
+      data: {test: thingOneData},
+      variables: {id: thingOneData.id},
+    })
+    cache.writeQuery({
+      query,
+      data: {test: thingTwoData},
+      variables: {id: thingTwoData.id},
+    })
+
     modifyQuery<any>((result) =>
-      result.data.things.map((thingy: any) => ({
+      (result?.data?.things || []).map((thingy: any) => ({
         query,
-        data: {test: thingy},
+        data: {
+          test: {
+            lastName: (lastName: string) => `${lastName} modified`,
+          },
+        },
         variables: {id: thingy.id},
       })),
     )(cache, {
@@ -302,10 +325,16 @@ describe('modifyQuery', () => {
     })
 
     expect(cache.readQuery({query, variables: {id: thingOneData.id}})).toEqual({
-      test: thingOneData,
+      test: {
+        ...thingOneData,
+        lastName: 'One modified',
+      },
     })
     expect(cache.readQuery({query, variables: {id: thingTwoData.id}})).toEqual({
-      test: thingTwoData,
+      test: {
+        ...thingTwoData,
+        lastName: 'Two modified',
+      },
     })
   })
 
@@ -352,17 +381,21 @@ describe('modifyQuery', () => {
         test {
           __typename
           id
+          firstName
         }
       }
     `
     const data = {
       __typename: 'Test',
       id: 'thingy',
+      firstName: 'Original firstName',
     }
 
     cache.writeQuery({
       query,
-      data,
+      data: {
+        test: data,
+      },
     })
 
     let diffResult: DataProxy.DiffResult<any> | undefined
@@ -374,10 +407,14 @@ describe('modifyQuery', () => {
       optimistic: false,
     })
 
-    modifyQuery<any>((result) => ({
+    modifyQuery<any>(() => ({
       query,
-      data: result.data,
-    }))(cache, {data: {test: data}})
+      data: {
+        test: {
+          firstName: (firstName: string) => `${firstName} modified`,
+        },
+      },
+    }))(cache, {})
 
     expect(diffResult).toBeDefined()
   })
@@ -448,7 +485,7 @@ describe('modifyQuery', () => {
     expect(cache.readQuery({query})).toBeNull()
   })
 
-  it('uses optimistic cache for modifiers by default', () => {
+  it('uses optimistic cache by default', () => {
     const cache = new InMemoryCache()
     const query = gql`
       query GetTest {
@@ -495,7 +532,7 @@ describe('modifyQuery', () => {
     })
   })
 
-  it('can use normal cache for modifiers', () => {
+  it('can use normal cache', () => {
     const cache = new InMemoryCache()
     const query = gql`
       query GetTest {
@@ -523,23 +560,17 @@ describe('modifyQuery', () => {
       'optimistic-query-id',
     )
 
-    modifyQuery<any>((result) => ({
+    modifyQuery<any>(() => ({
       optimistic: false,
       query,
       data: {
         test: {
-          ...result.data.test,
           firstName: (cachedFirstName?: string) =>
             `${cachedFirstName || ''} modified`,
         },
       },
-    }))(cache, {data})
+    }))(cache, {})
 
-    expect(cache.readQuery({query})).toEqual({
-      test: {
-        ...data.test,
-        firstName: ' modified',
-      },
-    })
+    expect(cache.readQuery({query})).toBeNull()
   })
 })

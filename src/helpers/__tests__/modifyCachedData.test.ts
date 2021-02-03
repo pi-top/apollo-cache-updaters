@@ -1,51 +1,29 @@
-import {gql, InMemoryCache} from '@apollo/client'
+import {InMemoryCache} from '@apollo/client'
 
-import createData from '../createData'
+import modifyCachedData from '../modifyCachedData'
 
-describe('createData', () => {
+describe('modifyCachedData', () => {
   it('returns store values unmodified', () => {
     const cache = new InMemoryCache()
 
-    expect(createData({__typename: 'Test', id: 'thingy'}, cache)).toEqual({
-      __typename: 'Test',
-      id: 'thingy',
-    })
-  })
-
-  it('evaluates modifiers when there is no cached data', () => {
-    const cache = new InMemoryCache()
-
     expect(
-      createData(
-        {__typename: 'Test', id: 'thingy', array: () => ['new item']},
-        cache,
-      ),
+      modifyCachedData({__typename: 'Test', id: 'thingy'}, {}, cache),
     ).toEqual({
       __typename: 'Test',
       id: 'thingy',
-      array: ['new item'],
     })
   })
 
   it('evaluates modifiers when there is cached data', () => {
     const cache = new InMemoryCache()
-    cache.writeFragment({
-      fragment: gql`
-        fragment CachedTestData on Test {
-          __typename
-          id
-          array
-        }
-      `,
-      data: {
-        __typename: 'Test',
-        id: 'thingy',
-        array: ['cached item'],
-      },
-    })
 
     expect(
-      createData(
+      modifyCachedData(
+        {
+          __typename: 'Test',
+          id: 'thingy',
+          array: ['cached item'],
+        },
         {
           __typename: 'Test',
           id: 'thingy',
@@ -65,31 +43,19 @@ describe('createData', () => {
 
   it('evaluates modifiers of relations', () => {
     const cache = new InMemoryCache()
-    cache.writeFragment({
-      fragment: gql`
-        fragment NestedCachedTestData on Test {
-          __typename
-          id
-          nested {
-            __typename
-            id
-          }
-        }
-      `,
-      data: {
-        __typename: 'Test',
-        id: 'thingy',
-        nested: [
-          {
-            __typename: 'Nested',
-            id: 'nested thingy',
-          },
-        ],
-      },
-    })
 
     expect(
-      createData(
+      modifyCachedData(
+        {
+          __typename: 'Test',
+          id: 'thingy',
+          nested: [
+            {
+              __typename: 'Nested',
+              id: 'nested thingy',
+            },
+          ],
+        },
         {
           __typename: 'Test',
           id: 'thingy',
