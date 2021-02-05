@@ -72,11 +72,17 @@ describe('modify', () => {
           firstName() {
             return 'New firstName'
           },
+          lastName(lastName) {
+            return lastName
+          }
         },
       },
       {
         id: cache.identify(result.data),
         fields: {
+          firstName(firstName) {
+            return firstName
+          },
           lastName() {
             return 'New lastName'
           },

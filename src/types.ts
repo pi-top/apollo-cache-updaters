@@ -1,5 +1,4 @@
 import {Cache, ApolloCache, StoreValue, FetchResult} from '@apollo/client'
-import {Modifier} from '@apollo/client/cache/core/types/common'
 
 export type UpdaterOptions = {
   skip?: boolean
@@ -22,9 +21,7 @@ export type EvictOptions = Cache.EvictOptions & {
   gc?: boolean
 }
 
-export type ModifyOptions = Omit<Cache.ModifyOptions, 'fields'> & {
-  fields: {[fieldName: string]: Modifier<any> | undefined} | Modifier<any>
-}
+export type ModifyOptions = Cache.ModifyOptions
 
 export type ModifyFragmentOptions<TData, TVariables> = Omit<
   Cache.WriteFragmentOptions<TData, TVariables>,
