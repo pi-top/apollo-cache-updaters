@@ -20,10 +20,13 @@ describe('modifyQuery', () => {
       },
     }
 
-    modifyQuery<any>((result) => ({
+    modifyQuery<typeof data, typeof data>((result) => ({
       query,
-      data: result.data,
-    }))(cache, {data})
+      data: (cached) => ({
+        ...cached,
+        ...result.data,
+      }),
+    }))(cache as any, {data})
 
     expect(cache.readQuery({query})).toBeNull()
   })
@@ -47,11 +50,14 @@ describe('modifyQuery', () => {
 
     cache.writeQuery({query, data})
 
-    modifyQuery<any>((result) => ({
+    modifyQuery<typeof data, typeof data>((result) => ({
       query,
-      data: result.data,
+      data: (cached) => ({
+        ...cached,
+        ...result.data,
+      }),
       variables: {id: data.test.id},
-    }))(cache, {data})
+    }))(cache as any, {data})
 
     expect(
       cache.readQuery({
@@ -85,15 +91,15 @@ describe('modifyQuery', () => {
       data,
     })
 
-    modifyQuery<any>(() => ({
+    modifyQuery<typeof data, typeof data>(() => ({
       query,
-      data: {
-        test: {
-          firstName: (cachedFirstName?: string) =>
-            `${cachedFirstName || ''} modified`,
-        },
-      },
-    }))(cache, {})
+      data: () => ({
+        test: (test) => ({
+          ...test,
+          firstName: (firstName) => `${firstName} modified`,
+        }),
+      }),
+    }))(cache as any, {data})
 
     expect(cache.readQuery({query, returnPartialData: true})).toEqual({
       test: {
@@ -129,16 +135,16 @@ describe('modifyQuery', () => {
       variables,
     })
 
-    modifyQuery<any>((result) => ({
+    modifyQuery<typeof data, typeof data>((result) => ({
       query,
-      data: {
-        test: {
-          firstName: (cachedFirstName?: string) =>
-            `${cachedFirstName || ''} modified`,
-        },
-      },
-      variables: {id: result.data.test.id},
-    }))(cache, {data})
+      data: () => ({
+        test: (test) => ({
+          ...test,
+          firstName: (firstName) => `${firstName} modified`,
+        }),
+      }),
+      variables: {id: result?.data?.test.id},
+    }))(cache as any, {data})
 
     expect(cache.readQuery({query, variables})).toEqual({
       test: {
@@ -185,17 +191,16 @@ describe('modifyQuery', () => {
       id: 'new-nested-thingy',
     }
 
-    modifyQuery((result) => ({
+    modifyQuery<typeof nested, typeof data>((result) => ({
       query,
-      data: {
-        test: {
-          relation: (cachedRelation: typeof nested[] = []) => [
-            ...cachedRelation,
-            result.data,
-          ],
-        },
-      },
-    }))(cache, {data: newNested})
+      data: () => ({
+        test: (test) => ({
+          ...test,
+          relation: (cachedRelation) =>
+            result.data ? [...cachedRelation, result.data] : cachedRelation,
+        }),
+      }),
+    }))(cache as any, {data: newNested})
 
     expect(cache.readQuery({query})).toEqual({
       test: {
@@ -213,9 +218,10 @@ describe('modifyQuery', () => {
           __typename
           id
           relation {
-            id
             __typename
+            id
             counter
+            activeUser
           }
         }
       }
@@ -223,13 +229,14 @@ describe('modifyQuery', () => {
     const nested = {
       __typename: 'Nested',
       id: 'nested-thingy',
+      activeUser: 'Liv',
       counter: 1,
     }
     const data = {
       test: {
         __typename: 'Test',
         id: 'thingy',
-        relation: [nested],
+        relation: nested,
       },
     }
 
@@ -240,34 +247,32 @@ describe('modifyQuery', () => {
 
     const newNested = {
       __typename: 'Nested',
-      id: 'new-nested-thingy',
-      counter: 0,
+      id: 'nested-thingy',
+      activeUser: 'Angus',
     }
 
-    modifyQuery<any>((result) => ({
+    modifyQuery<typeof newNested, typeof data>((result) => ({
       query,
-      data: {
-        test: {
-          ...data.test,
-          relation: (cachedRelation: typeof nested[] = []) =>
-            [...cachedRelation, result.data].map((n) => ({
-              ...n,
-              counter: (counter = 0) => counter + 1,
-            })),
-        },
-      },
-    }))(cache, {data: newNested})
+      data: () => ({
+        test: (test) => ({
+          ...test,
+          relation: (relation) => ({
+            ...relation,
+            ...result.data,
+            counter: (counter) => counter + 1,
+          }),
+        }),
+      }),
+    }))(cache as any, {data: newNested})
 
     expect(cache.readQuery({query})).toEqual({
       test: {
         ...data.test,
-        relation: [
-          {
-            ...nested,
-            counter: 2,
-          },
-          {...newNested, counter: 1},
-        ],
+        relation: {
+          ...nested,
+          ...newNested,
+          counter: 2,
+        },
       },
     })
   })
@@ -308,21 +313,22 @@ describe('modifyQuery', () => {
       variables: {id: thingTwoData.id},
     })
 
-    modifyQuery<any>((result) =>
+    const data = {
+      things: [thingOneData, thingTwoData],
+    }
+
+    modifyQuery<typeof data, {test: typeof thingOneData}>((result) =>
       (result?.data?.things || []).map((thingy: any) => ({
         query,
-        data: {
-          test: {
+        data: () => ({
+          test: (test) => ({
+            ...test,
             lastName: (lastName: string) => `${lastName} modified`,
-          },
-        },
+          }),
+        }),
         variables: {id: thingy.id},
       })),
-    )(cache, {
-      data: {
-        things: [thingOneData, thingTwoData],
-      },
-    })
+    )(cache as any, {data})
 
     expect(cache.readQuery({query, variables: {id: thingOneData.id}})).toEqual({
       test: {
@@ -365,11 +371,14 @@ describe('modifyQuery', () => {
       },
     })
 
-    modifyQuery<any>((result, c) => ({
+    modifyQuery<typeof data, typeof data>((result, c) => ({
       id: c.identify(reference!),
       query,
-      data: result.data,
-    }))(cache, {data})
+      data: (cached) => ({
+        ...cached,
+        ...result.data,
+      }),
+    }))(cache as any, {data})
 
     expect(cache.readQuery({query})).toEqual(data)
   })
@@ -407,14 +416,15 @@ describe('modifyQuery', () => {
       optimistic: false,
     })
 
-    modifyQuery<any>(() => ({
+    modifyQuery<any, {test: typeof data}>(() => ({
       query,
-      data: {
-        test: {
+      data: () => ({
+        test: (test) => ({
+          ...test,
           firstName: (firstName: string) => `${firstName} modified`,
-        },
-      },
-    }))(cache, {})
+        }),
+      }),
+    }))(cache as any, {})
 
     expect(diffResult).toBeDefined()
   })
@@ -448,7 +458,7 @@ describe('modifyQuery', () => {
       optimistic: false,
     })
 
-    modifyQuery<any>((result) => ({
+    modifyQuery<any, {test: typeof data}>((result) => ({
       query,
       data: result.data,
       broadcast: false,
@@ -476,11 +486,14 @@ describe('modifyQuery', () => {
       },
     }
 
-    modifyQuery<any>((result) => ({
+    modifyQuery<typeof data, typeof data>((result) => ({
       query,
-      data: result.data,
-      skip: result.data.test.skip,
-    }))(cache, {data})
+      data: (cached) => ({
+        ...cached,
+        ...result.data,
+      }),
+      skip: result.data?.test.skip,
+    }))(cache as any, {data})
 
     expect(cache.readQuery({query})).toBeNull()
   })
@@ -513,15 +526,15 @@ describe('modifyQuery', () => {
       'optimistic-query-id',
     )
 
-    modifyQuery<any>((result) => ({
+    modifyQuery<any, typeof data>((result) => ({
       query,
-      data: {
-        test: {
+      data: () => ({
+        test: () => ({
           ...result.data.test,
           firstName: (cachedFirstName?: string) =>
             `${cachedFirstName || ''} modified`,
-        },
-      },
+        }),
+      }),
     }))(cache, {data})
 
     expect(cache.readQuery({query})).toEqual({
@@ -560,15 +573,16 @@ describe('modifyQuery', () => {
       'optimistic-query-id',
     )
 
-    modifyQuery<any>(() => ({
+    modifyQuery<any, typeof data>(() => ({
       optimistic: false,
       query,
-      data: {
-        test: {
+      data: () => ({
+        test: (cached) => ({
+          ...cached,
           firstName: (cachedFirstName?: string) =>
             `${cachedFirstName || ''} modified`,
-        },
-      },
+        }),
+      }),
     }))(cache, {})
 
     expect(cache.readQuery({query})).toBeNull()

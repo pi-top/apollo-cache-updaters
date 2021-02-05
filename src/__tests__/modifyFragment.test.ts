@@ -19,13 +19,14 @@ describe('modifyFragment', () => {
       firstName: 'Original firstName',
     }
 
-    modifyFragment<any>((result, c) => ({
-      id: c.identify(result.data),
+    modifyFragment<typeof data, typeof data>((result, c) => ({
+      id: c.identify(result.data || {}),
       fragment,
-      data: {
-        firstName: (firstName: string) => `${firstName} modified`,
-      },
-    }))(cache, {data})
+      data: (cached) => ({
+        ...cached,
+        firstName: (firstName) => `${firstName} modified`,
+      }),
+    }))(cache as any, {data})
 
     expect(cache.readFragment({fragment, id: cache.identify(data)})).toBeNull()
   })
@@ -50,14 +51,14 @@ describe('modifyFragment', () => {
       data,
     })
 
-    modifyFragment<any, any, any>((result, c) => ({
-      id: c.identify(result.data),
+    modifyFragment<typeof data, typeof data>((result, c) => ({
+      id: c.identify(result.data || {}),
       fragment,
-      data: {
-        firstName: (cachedFirstName?: string) =>
-          `${cachedFirstName || ''} modified`,
-      },
-    }))(cache, {data})
+      data: (cached) => ({
+        ...cached,
+        firstName: (cachedFirstName) => `${cachedFirstName || ''} modified`,
+      }),
+    }))(cache as any, {data})
 
     expect(
       cache.readFragment({
@@ -102,17 +103,15 @@ describe('modifyFragment', () => {
       id: 'new-nested-thingy',
     }
 
-    modifyFragment<any, any, any>((result, c) => ({
+    modifyFragment<typeof nested, typeof data>((result, c) => ({
       id: c.identify(data),
       fragment,
-      data: {
-        ...data,
-        relation: (cachedRelation: typeof nested[] = []) => [
-          ...cachedRelation,
-          result.data,
-        ],
-      },
-    }))(cache, {data: newNested})
+      data: (cached) => ({
+        ...cached,
+        relation: (cachedRelation) =>
+          result.data ? [...cachedRelation, result.data] : cachedRelation,
+      }),
+    }))(cache as any, {data: newNested})
 
     expect(
       cache.readFragment({
@@ -146,7 +145,7 @@ describe('modifyFragment', () => {
     const data = {
       __typename: 'Test',
       id: 'thingy',
-      relation: [nested],
+      relation: nested,
     }
 
     cache.writeFragment({
@@ -160,17 +159,17 @@ describe('modifyFragment', () => {
       counter: 0,
     }
 
-    modifyFragment<any, any, any>((result, c) => ({
+    modifyFragment<typeof nested, typeof data>((_, c) => ({
       id: c.identify(data),
       fragment,
-      data: {
-        relation: (cachedRelation: typeof nested[]) =>
-          [...cachedRelation, result.data].map((n) => ({
-            ...n,
-            counter: (counter = 0) => counter + 1,
-          })),
-      },
-    }))(cache, {data: newNested})
+      data: (cached) => ({
+        ...cached,
+        relation: (cachedRelation: typeof nested) => ({
+          ...cachedRelation,
+          counter: (counter) => counter + 1,
+        }),
+      }),
+    }))(cache as any, {data: newNested})
 
     expect(
       cache.readFragment({
@@ -179,13 +178,10 @@ describe('modifyFragment', () => {
       }),
     ).toEqual({
       ...data,
-      relation: [
-        {
-          ...nested,
-          counter: 2,
-        },
-        {...newNested, counter: 1},
-      ],
+      relation: {
+        ...nested,
+        counter: 2,
+      },
     })
   })
 
@@ -209,6 +205,10 @@ describe('modifyFragment', () => {
       firstName: 'Two',
     }
 
+    const data = {
+      things: [thingOneData, thingTwoData],
+    }
+
     cache.writeFragment({
       fragment,
       data: thingOneData,
@@ -218,15 +218,16 @@ describe('modifyFragment', () => {
       data: thingTwoData,
     })
 
-    modifyFragment<any>((result, c) =>
-      result.data.things.map((thing: any) => ({
+    modifyFragment<typeof data, typeof thingOneData>((result, c) =>
+      (result.data?.things || []).map((thing: any) => ({
         id: c.identify(thing),
         fragment,
-        data: {
-          firstName: (firstName: string) => `${firstName} modified`,
-        },
+        data: (cached) => ({
+          ...cached,
+          firstName: (firstName) => `${firstName} modified`,
+        }),
       })),
-    )(cache, {
+    )(cache as any, {
       data: {
         things: [thingOneData, thingTwoData],
       },
@@ -259,6 +260,7 @@ describe('modifyFragment', () => {
       __typename: 'Test',
       id: 'thingy',
       firstName: 'New firstName',
+      extra: 'field',
     }
     const fragmentName = 'TestDataWithOwnFrag'
     const fragment = gql`
@@ -270,6 +272,7 @@ describe('modifyFragment', () => {
 
       fragment ${fragmentName} on Test {
         ...TestFields
+        extra
       }
     `
 
@@ -280,14 +283,19 @@ describe('modifyFragment', () => {
         __typename: 'Test',
         id: 'thingy',
         firstName: 'Initial firstName',
+        extra: 'field',
       },
     })
 
-    modifyFragment<any, any, any>((result) => ({
-      data: result.data,
+    modifyFragment<typeof data, typeof data, any>((result, c) => ({
+      id: c.identify(result.data || {}),
+      data: (cached) => ({
+        ...cached,
+        ...result.data,
+      }),
       fragment,
       fragmentName,
-    }))(cache, {data})
+    }))(cache as any, {data})
 
     expect(
       cache.readFragment({
@@ -331,8 +339,8 @@ describe('modifyFragment', () => {
       optimistic: false,
     })
 
-    modifyFragment<any, any, any>((result, c) => ({
-      id: c.identify(result.data),
+    modifyFragment<typeof data, typeof data>((result, c) => ({
+      id: c.identify(result.data || {}),
       fragment: gql`
         fragment BroadcastFrag on Test {
           __typename
@@ -340,10 +348,11 @@ describe('modifyFragment', () => {
           firstName
         }
       `,
-      data: {
-        firstName: (firstName: string) => `${firstName} modified`,
-      },
-    }))(cache, {data})
+      data: (cached) => ({
+        ...cached,
+        firstName: (firstName) => `${firstName} modified`,
+      }),
+    }))(cache as any, {data})
 
     expect(diffResult).toBeDefined()
   })
@@ -381,7 +390,8 @@ describe('modifyFragment', () => {
       optimistic: false,
     })
 
-    modifyFragment<any, any, any>((result) => ({
+    modifyFragment<typeof data, typeof data.test, any>((result, c) => ({
+      id: c.identify(result.data?.test || {}),
       fragment: gql`
         fragment PreventBroadcastFrag on Test {
           __typename
@@ -389,12 +399,13 @@ describe('modifyFragment', () => {
           firstName
         }
       `,
-      data: {
-        ...result.data.test,
-        firstName: (firstName: string) => `${firstName} modified`,
-      },
+      data: (cached) => ({
+        ...cached,
+        ...result.data?.test,
+        firstName: (firstName) => `${firstName} modified`,
+      }),
       broadcast: false,
-    }))(cache, {data})
+    }))(cache as any, {data})
 
     expect(diffResult).not.toBeDefined()
   })
@@ -419,14 +430,14 @@ describe('modifyFragment', () => {
       data,
     })
 
-    modifyFragment<any>((result) => ({
+    modifyFragment<typeof data, typeof data>((result) => ({
       fragment,
-      data: {
+      data: (cached) => ({
+        ...cached,
         ...result.data,
-        skip: false,
-      },
-      skip: result.data.skip,
-    }))(cache, {data})
+      }),
+      skip: result.data?.skip,
+    }))(cache as any, {data})
 
     expect(
       cache.readFragment({
@@ -436,7 +447,7 @@ describe('modifyFragment', () => {
     ).toEqual(data)
   })
 
-  it('uses optimistic cache for modifiers by default', () => {
+  it('uses optimistic cache by default', () => {
     const cache = new InMemoryCache()
     const fragment = gql`
       fragment OptimisticTestData on Test {
@@ -460,15 +471,15 @@ describe('modifyFragment', () => {
       'optimistic-query-id',
     )
 
-    modifyFragment<any>((result) => ({
+    modifyFragment<typeof data, typeof data>((result) => ({
       id: cache.identify(data),
       fragment,
-      data: {
+      data: (cached) => ({
+        ...cached,
         ...result.data,
-        firstName: (cachedFirstName?: string) =>
-          `${cachedFirstName || ''} modified`,
-      },
-    }))(cache, {data})
+        firstName: (cachedFirstName) => `${cachedFirstName} modified`,
+      }),
+    }))(cache as any, {data})
 
     expect(cache.readFragment({fragment, id: cache.identify(data)})).toEqual({
       ...data,
@@ -476,7 +487,7 @@ describe('modifyFragment', () => {
     })
   })
 
-  it('can use normal cache for modifiers', () => {
+  it('can use normal cache', () => {
     const cache = new InMemoryCache()
     const fragment = gql`
       fragment OptimisticTestData on Test {
@@ -500,19 +511,16 @@ describe('modifyFragment', () => {
       'optimistic-query-id',
     )
 
-    modifyFragment<any>((result) => ({
+    modifyFragment<typeof data, typeof data>((result, c) => ({
+      id: c.identify(result.data || {}),
       fragment,
       optimistic: false,
-      data: {
-        ...result.data,
-        firstName: (cachedFirstName?: string) =>
-          `${cachedFirstName || ''} modified`,
-      },
-    }))(cache, {data})
+      data: (cached) => ({
+        ...cached,
+        firstName: (cachedFirstName) => `${cachedFirstName} modified`,
+      }),
+    }))(cache as any, {data})
 
-    expect(cache.readFragment({fragment, id: cache.identify(data)})).toEqual({
-      ...data,
-      firstName: ' modified',
-    })
+    expect(cache.readFragment({fragment, id: cache.identify(data)})).toBeNull()
   })
 })

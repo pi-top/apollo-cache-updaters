@@ -1,20 +1,35 @@
-import {Cache, ApolloCache, StoreValue, FetchResult} from '@apollo/client'
-
-export type UpdaterOptions = {
-  skip?: boolean
-}
+import {Cache, ApolloCache, FetchResult} from '@apollo/client'
 
 export type MutationUpdaterOptionsFn<TData, Options extends UpdaterOptions> = (
   result: FetchResult<TData>,
   cache: ApolloCache<TData>,
 ) => Options | Options[]
 
-export type ModifyField<FieldValue extends StoreValue> = (
-  cachedData: FieldValue,
-) => FieldValue
+export type DenormalisedStoreValue =
+  | void
+  | null
+  | undefined
+  | number
+  | string
+  | string[]
+  | Object
+  | DenormalisedStoreObject
+  | DenormalisedStoreObject[]
+
+export type DenormalisedStoreObject = {
+  [key: string]: DenormalisedStoreValue
+}
 
 export type ModifyData<TData> = {
-  [field in keyof TData]: ModifyField<TData[field]> | TData[field]
+  [field in keyof TData]: Modifier<TData[field]> | TData[field]
+}
+
+export type Modifier<TValue> = (
+  cachedData: TValue,
+) => TValue | ModifyData<TValue>
+
+export type UpdaterOptions = {
+  skip?: boolean
 }
 
 export type EvictOptions = Cache.EvictOptions & {
@@ -27,7 +42,7 @@ export type ModifyFragmentOptions<TData, TVariables> = Omit<
   Cache.WriteFragmentOptions<TData, TVariables>,
   'data'
 > & {
-  data: ModifyData<Partial<TData>>
+  data: (data: TData) => ModifyData<TData>
   optimistic?: boolean
 }
 
@@ -35,7 +50,7 @@ export type ModifyQueryOptions<TData, TVariables> = Omit<
   Cache.WriteQueryOptions<TData, TVariables>,
   'data'
 > & {
-  data: ModifyData<Partial<TData>>
+  data: (data: TData) => ModifyData<TData>
   optimistic?: boolean
 }
 

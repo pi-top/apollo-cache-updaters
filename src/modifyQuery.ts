@@ -1,7 +1,7 @@
 import {ApolloCache} from '@apollo/client'
 
 import createUpdater from './utils/createUpdater'
-import modifyCachedData from './helpers/modifyCachedData'
+import modifyObject from './utils/modifyObject'
 import {ModifyQueryOptions} from './types'
 
 function modifyQuery<
@@ -17,7 +17,7 @@ function modifyQuery<
   if (!queryData) return
 
   cache.writeQuery({
-    data: modifyCachedData(queryData, modifiers, cache),
+    data: modifyObject(queryData, modifiers(queryData)),
     ...queryOptions,
   })
 }

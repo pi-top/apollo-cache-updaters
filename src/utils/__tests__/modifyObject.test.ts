@@ -1,24 +1,19 @@
-import {InMemoryCache} from '@apollo/client'
+import modifyObject from '../modifyObject'
 
-import modifyCachedData from '../modifyCachedData'
-
-describe('modifyCachedData', () => {
-  it('returns store values unmodified', () => {
-    const cache = new InMemoryCache()
-
-    expect(
-      modifyCachedData({__typename: 'Test', id: 'thingy'}, {}, cache),
-    ).toEqual({
-      __typename: 'Test',
-      id: 'thingy',
+describe('modifyObject', () => {
+  it('can overwrite store values', () => {
+    expect(modifyObject({__typename: 'Test', id: 'thingy'}, {
+      __typename: 'New',
+      id: 'new thingy',
+    })).toEqual({
+      __typename: 'New',
+      id: 'new thingy',
     })
   })
 
   it('evaluates modifiers when there is cached data', () => {
-    const cache = new InMemoryCache()
-
     expect(
-      modifyCachedData(
+      modifyObject(
         {
           __typename: 'Test',
           id: 'thingy',
@@ -27,12 +22,11 @@ describe('modifyCachedData', () => {
         {
           __typename: 'Test',
           id: 'thingy',
-          array: (cachedItems?: string[]) => [
-            ...(cachedItems || []),
+          array: (cachedItems) => [
+            ...cachedItems,
             'new item',
           ],
         },
-        cache,
       ),
     ).toEqual({
       __typename: 'Test',
@@ -42,10 +36,8 @@ describe('modifyCachedData', () => {
   })
 
   it('evaluates modifiers of relations', () => {
-    const cache = new InMemoryCache()
-
     expect(
-      modifyCachedData(
+      modifyObject(
         {
           __typename: 'Test',
           id: 'thingy',
@@ -59,15 +51,14 @@ describe('modifyCachedData', () => {
         {
           __typename: 'Test',
           id: 'thingy',
-          nested: (cachedItems?: any[]) => [
-            ...(cachedItems || []),
+          nested: (cachedItems) => [
+            ...cachedItems,
             {
               __typename: 'Nested',
               id: 'new nested thingy',
             },
           ],
         },
-        cache,
       ),
     ).toEqual({
       __typename: 'Test',

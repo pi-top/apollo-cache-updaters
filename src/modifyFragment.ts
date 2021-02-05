@@ -1,7 +1,7 @@
 import {ApolloCache} from '@apollo/client'
 
 import createUpdater from './utils/createUpdater'
-import modifyCachedData from './helpers/modifyCachedData'
+import modifyObject from './utils/modifyObject'
 import {ModifyFragmentOptions} from './types'
 
 function modifyFragment<
@@ -17,7 +17,7 @@ function modifyFragment<
   if (!fragmentData) return
 
   cache.writeFragment<any, TFragmentVariables>({
-    data: modifyCachedData(fragmentData, modifiers, cache),
+    data: modifyObject(fragmentData, modifiers(fragmentData)),
     ...fragmentOptions,
   })
 }
