@@ -1,6 +1,5 @@
 /* eslint-disable babel/camelcase */
 
-import combine from './utils/combine'
 import evict from './evict'
 import modify from './modify'
 import writeFragment from './writeFragment'
@@ -9,7 +8,6 @@ import experimental_modifyFragment from './modifyFragment'
 import experimental_modifyQuery from './modifyQuery'
 
 export {
-  combine,
   evict,
   modify,
   writeFragment,
@@ -18,4 +16,5 @@ export {
   experimental_modifyQuery,
 }
 
+export * from './utils';
 export * from './types'
