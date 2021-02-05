@@ -1,10 +1,14 @@
 import {ApolloCache} from '@apollo/client'
 
-import createUpdater from './helpers/createUpdater'
+import createUpdater from './utils/createUpdater'
 import modifyCachedData from './helpers/modifyCachedData'
 import {ModifyFragmentOptions} from './types'
 
-function modifyFragment<TData, TFragmentData = {}, TFragmentVariables = {}>(
+function modifyFragment<
+  TData,
+  TFragmentData = {},
+  TFragmentVariables = {}
+>(
   cache: ApolloCache<TData>,
   options: ModifyFragmentOptions<TFragmentData, TFragmentVariables>,
 ) {

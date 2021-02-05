@@ -1,5 +1,5 @@
 import {ApolloCache} from '@apollo/client'
-import createUpdater from './helpers/createUpdater'
+import createUpdater from './utils/createUpdater'
 
 import {EvictOptions} from './types'
 

@@ -1,7 +1,7 @@
 import {ApolloCache} from '@apollo/client'
 
-import buildFragment from './helpers/buildFragment'
-import createUpdater from './helpers/createUpdater'
+import buildFragment from './utils/buildFragment'
+import createUpdater from './utils/createUpdater'
 import {WriteFragmentOptions} from './types'
 
 function writeFragment<TData, TFragmentData = {}, TFragmentVariables = {}>(

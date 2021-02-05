@@ -1,6 +1,6 @@
 /* eslint-disable babel/camelcase */
 
-import combine from './combine'
+import combine from './utils/combine'
 import evict from './evict'
 import modify from './modify'
 import writeFragment from './writeFragment'

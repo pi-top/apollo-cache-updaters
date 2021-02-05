@@ -1,10 +1,14 @@
 import {ApolloCache} from '@apollo/client'
 
-import createUpdater from './helpers/createUpdater'
+import createUpdater from './utils/createUpdater'
 import modifyCachedData from './helpers/modifyCachedData'
 import {ModifyQueryOptions} from './types'
 
-function modifyQuery<TData, TQueryData = {}, TQueryVariables = {}>(
+function modifyQuery<
+  TData,
+  TQueryData = {},
+  TQueryVariables = {}
+>(
   cache: ApolloCache<TData>,
   options: ModifyQueryOptions<TQueryData, TQueryVariables>,
 ) {
