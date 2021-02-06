@@ -14,9 +14,45 @@ describe('modifyFragment', () => {
     )
   })
 
+  it('throws when unable to build a fragment', () => {
+    const cache = new InMemoryCache()
+    const fragment = gql`
+      fragment WarnTestData on Test {
+        __typename
+        id
+        relation {
+          id
+          __typename
+        }
+      }
+    `
+    const data = {
+      __typename: 'Test',
+      id: 'thingy',
+      relation: [],
+    }
+
+    cache.writeFragment({
+      fragment,
+      data,
+    })
+
+    const update = modifyFragment<typeof data>((result) => ({
+      skip: !result.data,
+      data: () => ({
+        ...result.data!,
+        relation: (cachedRelation: {id: string}[]) =>
+          cachedRelation.filter((rel) => rel.id === 'id'),
+      }),
+    }))
+
+    expect(() => update(cache as any, {data})).toThrow()
+  })
+
   it('does not check for typename in data if fragment is passed', () => {
     const cache = new InMemoryCache()
     const update = modifyFragment(() => ({
+      id: cache.identify({id: 'thingy', __typename: 'Test'}),
       data: () => ({}),
       fragment: gql`
         fragment NoTypenameFragment on Test {
@@ -26,9 +62,7 @@ describe('modifyFragment', () => {
       `,
     }))
 
-    expect(() => update(cache, {})).not.toThrow(
-      'Unable to build a fragment without a typename',
-    )
+    expect(() => update(cache, {})).not.toThrow()
   })
 
   it('does nothing if fragment is not cached', () => {
@@ -59,45 +93,6 @@ describe('modifyFragment', () => {
     expect(cache.readFragment({fragment, id: cache.identify(data)})).toBeNull()
   })
 
-  it('can modify existing cached values without passing fragment', () => {
-    const cache = new InMemoryCache()
-    const fragment = gql`
-      fragment ModifiedTestData on Test {
-        __typename
-        id
-        firstName
-      }
-    `
-    const data = {
-      __typename: 'Test',
-      id: 'thingy',
-      firstName: 'Original firstName',
-    }
-
-    cache.writeFragment({
-      fragment,
-      data,
-    })
-
-    modifyFragment<typeof data, typeof data>((result, c) => ({
-      skip: !result.data,
-      data: () => ({
-        ...result.data!,
-        firstName: (cachedFirstName) => `${cachedFirstName} modified`,
-      }),
-    }))(cache as any, {data})
-
-    expect(
-      cache.readFragment({
-        id: cache.identify(data),
-        fragment,
-      }),
-    ).toEqual({
-      ...data,
-      firstName: 'Original firstName modified',
-    })
-  })
-
   it('can modify existing cached values', () => {
     const cache = new InMemoryCache()
     const fragment = gql`
@@ -124,6 +119,45 @@ describe('modifyFragment', () => {
       data: (cached) => ({
         ...cached,
         firstName: (cachedFirstName) => `${cachedFirstName || ''} modified`,
+      }),
+    }))(cache as any, {data})
+
+    expect(
+      cache.readFragment({
+        id: cache.identify(data),
+        fragment,
+      }),
+    ).toEqual({
+      ...data,
+      firstName: 'Original firstName modified',
+    })
+  })
+
+  it('can modify existing cached values without passing fragment', () => {
+    const cache = new InMemoryCache()
+    const fragment = gql`
+      fragment ModifiedTestData on Test {
+        __typename
+        id
+        firstName
+      }
+    `
+    const data = {
+      __typename: 'Test',
+      id: 'thingy',
+      firstName: 'Original firstName',
+    }
+
+    cache.writeFragment({
+      fragment,
+      data,
+    })
+
+    modifyFragment<typeof data, typeof data>((result, c) => ({
+      skip: !result.data,
+      data: () => ({
+        ...result.data!,
+        firstName: (cachedFirstName) => `${cachedFirstName} modified`,
       }),
     }))(cache as any, {data})
 
