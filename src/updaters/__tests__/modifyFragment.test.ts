@@ -3,6 +3,34 @@ import {DataProxy, gql, InMemoryCache} from '@apollo/client'
 import modifyFragment from '../modifyFragment'
 
 describe('modifyFragment', () => {
+  it('throws when there is no typename in data', () => {
+    const cache = new InMemoryCache()
+    const update = modifyFragment(() => ({
+      data: () => ({}),
+    }))
+
+    expect(() => update(cache, {})).toThrow(
+      'Unable to build a fragment without a typename',
+    )
+  })
+
+  it('does not check for typename in data if fragment is passed', () => {
+    const cache = new InMemoryCache()
+    const update = modifyFragment(() => ({
+      data: () => ({}),
+      fragment: gql`
+        fragment NoTypenameFragment on Test {
+          __typename
+          id
+        }
+      `,
+    }))
+
+    expect(() => update(cache, {})).not.toThrow(
+      'Unable to build a fragment without a typename',
+    )
+  })
+
   it('does nothing if fragment is not cached', () => {
     const cache = new InMemoryCache()
     const fragment = gql`
@@ -29,6 +57,45 @@ describe('modifyFragment', () => {
     }))(cache as any, {data})
 
     expect(cache.readFragment({fragment, id: cache.identify(data)})).toBeNull()
+  })
+
+  it('can modify existing cached values without passing fragment', () => {
+    const cache = new InMemoryCache()
+    const fragment = gql`
+      fragment ModifiedTestData on Test {
+        __typename
+        id
+        firstName
+      }
+    `
+    const data = {
+      __typename: 'Test',
+      id: 'thingy',
+      firstName: 'Original firstName',
+    }
+
+    cache.writeFragment({
+      fragment,
+      data,
+    })
+
+    modifyFragment<typeof data, typeof data>((result, c) => ({
+      skip: !result.data,
+      data: () => ({
+        ...result.data!,
+        firstName: (cachedFirstName) => `${cachedFirstName} modified`,
+      }),
+    }))(cache as any, {data})
+
+    expect(
+      cache.readFragment({
+        id: cache.identify(data),
+        fragment,
+      }),
+    ).toEqual({
+      ...data,
+      firstName: 'Original firstName modified',
+    })
   })
 
   it('can modify existing cached values', () => {

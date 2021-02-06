@@ -19,7 +19,10 @@ export default function modifyObject<TData>(
   cachedData: TData,
   modifiers: ModifyData<TData>,
 ): TData {
-  return Object.keys(cachedData).reduce<TData>((acc, key) => {
+  return Object.keys({
+    ...cachedData,
+    ...modifiers,
+  }).reduce<TData>((acc, key) => {
     const modifier = modifiers[key as keyof TData] as ModifyData<
       TData[keyof TData]
     >

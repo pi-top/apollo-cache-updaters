@@ -40,9 +40,10 @@ export type ModifyOptions = Cache.ModifyOptions
 
 export type ModifyFragmentOptions<TData, TVariables> = Omit<
   Cache.WriteFragmentOptions<TData, TVariables>,
-  'data'
+  'data' | 'fragment'
 > & {
   data: (data: TData) => ModifyData<TData>
+  fragment?: Cache.WriteFragmentOptions<TData, TVariables>['fragment']
   optimistic?: boolean
 }
 
