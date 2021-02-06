@@ -1,8 +1,8 @@
 import {ApolloCache} from '@apollo/client'
 
-import buildFragment from './utils/buildFragment'
-import createUpdater from './utils/createUpdater'
-import {WriteFragmentOptions} from './types'
+import buildFragment from '../utils/buildFragment'
+import createUpdater from '../utils/createUpdater'
+import {WriteFragmentOptions} from '../types'
 
 function writeFragment<TData, TFragmentData = {}, TFragmentVariables = {}>(
   cache: ApolloCache<TData>,

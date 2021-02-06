@@ -1,8 +1,8 @@
 import {ApolloCache} from '@apollo/client'
 
-import createUpdater from './utils/createUpdater'
-import modifyObject from './utils/modifyObject'
-import {ModifyFragmentOptions} from './types'
+import createUpdater from '../utils/createUpdater'
+import modifyObject from '../utils/modifyObject'
+import {ModifyFragmentOptions} from '../types'
 
 function modifyFragment<
   TData,

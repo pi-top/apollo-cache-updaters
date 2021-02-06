@@ -1,7 +1,7 @@
 import {ApolloCache} from '@apollo/client'
 
-import createUpdater from './utils/createUpdater'
-import {WriteQueryOptions} from './types'
+import createUpdater from '../utils/createUpdater'
+import {WriteQueryOptions} from '../types'
 
 function writeQuery<TData, TQueryData = {}, TQueryVariables = {}>(
   cache: ApolloCache<TData>,

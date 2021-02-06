@@ -1,8 +1,8 @@
 import {ApolloCache} from '@apollo/client'
 
-import createUpdater from './utils/createUpdater'
-import modifyObject from './utils/modifyObject'
-import {ModifyQueryOptions} from './types'
+import createUpdater from '../utils/createUpdater'
+import modifyObject from '../utils/modifyObject'
+import {ModifyQueryOptions} from '../types'
 
 function modifyQuery<
   TData,

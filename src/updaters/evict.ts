@@ -1,7 +1,7 @@
 import {ApolloCache} from '@apollo/client'
-import createUpdater from './utils/createUpdater'
 
-import {EvictOptions} from './types'
+import createUpdater from '../utils/createUpdater'
+import {EvictOptions} from '../types'
 
 function evict<TData>(cache: ApolloCache<TData>, options: EvictOptions) {
   const {gc = true, ...evictOptions} = options
