@@ -29,7 +29,8 @@ export type Modifier<TValue> = (
 ) => TValue | ModifyData<TValue>
 
 export type UpdaterOptions = {
-  skip?: boolean
+  skip?: boolean;
+  [key: string]: any;
 }
 
 export type EvictOptions = Cache.EvictOptions & {

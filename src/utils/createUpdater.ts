@@ -1,10 +1,10 @@
 import {MutationUpdaterFn, ApolloCache} from '@apollo/client'
 
-import {MutationUpdaterOptionsFn} from '../types'
+import {MutationUpdaterOptionsFn, UpdaterOptions} from '../types'
 
 export default function createUpdater<
   TData extends {[key: string]: any},
-  Options extends {[key: string]: any}
+  Options extends UpdaterOptions
 >(
   method: (cache: ApolloCache<TData>, options: Options) => void,
 ): (
